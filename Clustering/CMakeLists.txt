@@ -1,4 +1,4 @@
-#Cmake for Pre Processing Project
+#Cmake for Clustering Project
 PROJECT(clustering)
 
 #Minimum version of Cmake required
@@ -42,7 +42,6 @@ SET( 	HEADERS
 set( 	SOURCES
 	src/main.cpp
 )
-
 
 add_executable(clustering ${SOURCES} ${HEADERS})
 
