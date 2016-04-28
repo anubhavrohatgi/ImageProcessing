@@ -7,6 +7,9 @@ points are computed by replacing each data point with
 derivatives come from computing the derivative of each 
 fitted polynomial at each data point.
 
+The function now uses opencv.
+This is adapted from ScanTailor
+
 Developed by Anubhav Rohatgi 26/04/2016
 
 
