@@ -1,58 +1,85 @@
+
+/* Simple usage of reshape function in OpenCV  */
+
 #include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 #include <opencv2/videoio.hpp>
-#include <cstdlib>
+
+
 
 
 
 int main(int argc, char *argv[])
 {
-    int d=0;
-    std::vector<std::string> paths;
-    paths.push_back("/home/anubhav/Downloads/1_2016-06-22_09-59-16.mp4");
-    paths.push_back("/home/anubhav/Downloads/1_2016-06-22_09-52-21.mp4");
-    paths.push_back("/home/anubhav/Downloads/1_2016-06-22_09-41-29.mp4");
-    paths.push_back("/home/anubhav/Downloads/1_2016-06-22_10-10-54.mp4");
-    paths.push_back("/home/anubhav/Downloads/1_2016-06-22_10-10-54.mp4");
-    paths.push_back("/home/anubhav/Downloads/VideoBom-800x600.mp4");
 
-//    std::string dPath = "/home/anubhav/Downloads/1_2016-06-22_09-59-16.mp4";
+    cv::VideoCapture cap("/home/anubhav/Desktop/video.mp4");
 
-    for(auto& i : paths){
-    cv::VideoCapture cap(i);
-    if(!cap.isOpened())
+    if(!cap.isOpened()){
         return -1;
+    }
 
     cv::Mat frame;
-    int c = 0;
+
+
+    std::vector<cv::Mat> frames;
 
     for(;;){
-        cap>>frame;
 
+        cap>>frame;
         if(frame.empty())
             break;
+        cv::resize(frame,frame,cv::Size(),0.3,0.3,cv::INTER_LINEAR);
+        cv::imshow("Frame",frame);
 
-        cv::resize(frame,frame,cv::Size(),0.6,0.6,cv::INTER_LINEAR);
-        cv::imshow("frame",frame);
+        frames.push_back(frame);
 
-        if(c%40 == 0){
-//            char fname[100];
-//            scanf(fname,"/home/anubhav/Desktop/data/%i.jpg",d);
-            std::string fname = "/home/anubhav/Desktop/data/" + std::to_string(d) + ".jpg";
-            std::cout<<fname<<std::endl;
-            cv::imwrite(fname,frame);
-            d++;
-        }
-        c++;
-        char c = cv::waitKey(1);
-        if(c == 27)
+        char c = cv::waitKey(27);
+        if(c == 27){
             break;
-
+        }
     }
 
     cap.release();
+
+    std::cout<<"\nSize of the Single frame = "<<frame.size()<<std::endl;
+    std::cout<<"\nSize of the vector of mats = "<<frames.size()<<std::endl;
+
+    int height = frames[0].rows;
+
+    //convert the vector of mats to a single matrix with
+    cv::Mat matVector(frames.size(), frames[0].cols*frames[0].rows, frames[0].type());
+
+    //reshapes the matrix to single column
+    for(size_t i=0; i<frames.size(); i++){
+         (frames.at(i).reshape(0,1)).copyTo(matVector.row(i));
+        std::cout<<"\nSize of Mat after reshape = "<<matVector.row(i).size();
     }
-    return 0;
+
+    //This shows that the data is stored as columnwise where rows indicate the number of frames
+    //and cols will indicate the size of single mat as rows x cols
+    // ie. row1 = Mat 1
+    // row2 = Mat 2 and so on
+    std::cout<<"\nMatVector Size = cols  "<<matVector.cols<<" rows "<<matVector.rows<<std::endl;
+
+
+    //display each image in matVector separately
+
+    for(size_t r = 0; r < matVector.rows; r++  ){
+
+        cv::Mat img1d;
+        matVector.row(r).copyTo(img1d);
+
+        int cn = img1d.channels();
+        std::cout<<"\n"<<img1d.channels();
+
+        cv::Mat img;
+        img1d.reshape(cn,height).copyTo(img);
+
+        cv::imshow("Frame ReConstructed",img);
+        cv::waitKey();
+    }
+
+   return 0;
 }
